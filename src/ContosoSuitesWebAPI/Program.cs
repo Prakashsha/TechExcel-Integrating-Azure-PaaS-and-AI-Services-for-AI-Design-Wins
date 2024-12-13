@@ -24,8 +24,10 @@ builder.Services.AddSingleton<MaintenanceCopilot, MaintenanceCopilot>();
 // Create a single instance of the CosmosClient to be shared across the application.
 builder.Services.AddSingleton<CosmosClient>((_) =>
 {
+    Console.WriteLine("AccountEndpoint=https://h6rgqcy2sj3nw-cosmosdb.documents.azure.com:443/;AccountKey=cCYrYj9aONtlx3BEUtVKrnIlDKWQftDkzOumH7BMTvCNjLj0y0QrXwmS22yRyU4dqZJJY83Lwla7ACDbxf763A==;");
     CosmosClient client = new(
-        connectionString: builder.Configuration["CosmosDB:ConnectionString"]!
+        //connectionString: builder.Configuration["CosmosDB:ConnectionString"]!
+        "AccountEndpoint=https://h6rgqcy2sj3nw-cosmosdb.documents.azure.com:443/;AccountKey=cCYrYj9aONtlx3BEUtVKrnIlDKWQftDkzOumH7BMTvCNjLj0y0QrXwmS22yRyU4dqZJJY83Lwla7ACDbxf763A==;"
     );
     return client;
 });
@@ -61,9 +63,11 @@ app.MapGet("/", async () =>
     .WithOpenApi();
 
 // Retrieve the set of hotels from the database.
-app.MapGet("/Hotels", async () => 
+// Retrieve the set of hotels from the database.
+/*app.MapGet("/Hotels", async () => 
 {
-    throw new NotImplementedException();
+    var hotels = await app.Services.GetRequiredService<IDatabaseService>().GetHotels();
+    return hotels;
 })
     .WithName("GetHotels")
     .WithOpenApi();
@@ -71,7 +75,8 @@ app.MapGet("/Hotels", async () =>
 // Retrieve the bookings for a specific hotel.
 app.MapGet("/Hotels/{hotelId}/Bookings/", async (int hotelId) => 
 {
-    throw new NotImplementedException();
+    var bookings = await app.Services.GetRequiredService<IDatabaseService>().GetBookingsForHotel(hotelId);
+    return bookings;
 })
     .WithName("GetBookingsForHotel")
     .WithOpenApi();
@@ -79,10 +84,38 @@ app.MapGet("/Hotels/{hotelId}/Bookings/", async (int hotelId) =>
 // Retrieve the bookings for a specific hotel that are after a specified date.
 app.MapGet("/Hotels/{hotelId}/Bookings/{min_date}", async (int hotelId, DateTime min_date) => 
 {
-    throw new NotImplementedException();
+    var bookings = await app.Services.GetRequiredService<IDatabaseService>().GetBookingsByHotelAndMinimumDate(hotelId, min_date);
+    return bookings;
+})
+    .WithName("GetRecentBookingsForHotel")
+    .WithOpenApi();*/
+    // Retrieve the set of hotels from the database.
+app.MapGet("/Hotels", async () => 
+{
+    var hotels = await app.Services.GetRequiredService<IDatabaseService>().GetHotels();
+    return hotels;
+})
+    .WithName("GetHotels")
+    .WithOpenApi();
+
+// Retrieve the bookings for a specific hotel.
+app.MapGet("/Hotels/{hotelId}/Bookings/", async (int hotelId) => 
+{
+    var bookings = await app.Services.GetRequiredService<IDatabaseService>().GetBookingsForHotel(hotelId);
+    return bookings;
+})
+    .WithName("GetBookingsForHotel")
+    .WithOpenApi();
+
+// Retrieve the bookings for a specific hotel that are after a specified date.
+app.MapGet("/Hotels/{hotelId}/Bookings/{min_date}", async (int hotelId, DateTime min_date) => 
+{
+    var bookings = await app.Services.GetRequiredService<IDatabaseService>().GetBookingsByHotelAndMinimumDate(hotelId, min_date);
+    return bookings;
 })
     .WithName("GetRecentBookingsForHotel")
     .WithOpenApi();
+
 
 // This endpoint is used to send a message to the Azure OpenAI endpoint.
 app.MapPost("/Chat", async Task<string> (HttpRequest request) =>
